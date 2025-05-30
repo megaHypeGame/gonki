@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Двухместные гонки</title>
+    <title>Гонки на двоих</title>
     <style>
         body {
             margin: 0;
@@ -62,6 +62,7 @@
         h1 {
             color: #f1c40f;
             margin-bottom: 40px;
+            text-align: center;
         }
         
         .controls {
@@ -87,6 +88,13 @@
             align-items: center;
             color: white;
             z-index: 5;
+            font-size: 24px;
+        }
+        
+        #finishScreen h2 {
+            color: #f1c40f;
+            font-size: 48px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -94,7 +102,7 @@
     <div id="gameContainer">
         <canvas id="gameCanvas" width="800" height="600"></canvas>
         <div id="menu">
-            <h1>ДВУХМЕСТНЫЕ ГОНКИ</h1>
+            <h1>ГОНКИ НА ДВОИХ<br><span style="font-size: 18px;">Первый, кто завершит 3 круга - побеждает!</span></h1>
             <button class="track-option" data-track="1">Городская трасса</button>
             <button class="track-option" data-track="2">Пустынный каньон</button>
             <button class="track-option" data-track="3">Горный серпантин</button>
@@ -102,17 +110,17 @@
             <div class="controls">
                 <div class="player-controls">
                     <h3>Игрок 1</h3>
-                    <p>WASD - движение</p>
+                    <p>W - газ<br>A - влево<br>S - тормоз<br>D - вправо</p>
                 </div>
                 <div class="player-controls">
                     <h3>Игрок 2</h3>
-                    <p>Стрелки - движение</p>
+                    <p>↑ - газ<br>← - влево<br>↓ - тормоз<br>→ - вправо</p>
                 </div>
             </div>
         </div>
         
         <div id="finishScreen">
-            <h1 id="winnerText">Игрок 1 победил!</h1>
+            <h2 id="winnerText">Игрок 1 победил!</h2>
             <p>Нажмите любую клавишу для возврата в меню</p>
         </div>
     </div>
@@ -134,7 +142,7 @@
         let laps = [0, 0];
         const maxLaps = 3;
         
-        // Трассы с более интересным дизайном
+        // Трассы
         const tracks = {
             1: {
                 name: "Городская трасса",
@@ -143,9 +151,9 @@
                 borders: [
                     // Внешние границы
                     {x: 50, y: 50, width: 700, height: 500},
-                    // Внутренние "дыры" (где нет дороги)
+                    // Внутренние препятствия
                     {x: 150, y: 150, width: 500, height: 300, isHole: true},
-                    // Дополнительные препятствия
+                    // Дополнительные блоки
                     {x: 300, y: 200, width: 50, height: 200},
                     {x: 450, y: 200, width: 50, height: 200}
                 ],
@@ -156,8 +164,8 @@
                     {x: 100, y: 250, width: 50, height: 20}
                 ],
                 startPositions: [
-                    {x: 350, y: 200, angle: 0},
-                    {x: 450, y: 200, angle: 0}
+                    {x: 350, y: 200, angle: 0, color: '#3498db'},
+                    {x: 450, y: 200, angle: 0, color: '#e74c3c'}
                 ]
             },
             2: {
@@ -165,12 +173,12 @@
                 background: "#E6C200",
                 roadColor: "#B8860B",
                 borders: [
-                    // Основная форма трассы
+                    // Основная форма
                     {x: 50, y: 50, width: 700, height: 500},
-                    // "Тоннели"
+                    // Проходы
                     {x: 200, y: 150, width: 100, height: 300, isHole: true},
                     {x: 500, y: 150, width: 100, height: 300, isHole: true},
-                    // Центральный остров
+                    // Центральный блок
                     {x: 350, y: 200, width: 100, height: 200}
                 ],
                 checkpoints: [
@@ -181,8 +189,8 @@
                     {x: 350, y: 150, width: 20, height: 50}
                 ],
                 startPositions: [
-                    {x: 350, y: 100, angle: Math.PI/2},
-                    {x: 450, y: 100, angle: Math.PI/2}
+                    {x: 350, y: 100, angle: Math.PI/2, color: '#3498db'},
+                    {x: 450, y: 100, angle: Math.PI/2, color: '#e74c3c'}
                 ]
             },
             3: {
@@ -192,9 +200,9 @@
                 borders: [
                     // Внешние границы
                     {x: 50, y: 50, width: 700, height: 500},
-                    // Извилистая дорога
+                    // Внутренний путь
                     {x: 150, y: 100, width: 500, height: 400, isHole: true},
-                    // Дополнительные препятствия
+                    // Блоки на пути
                     {x: 300, y: 150, width: 200, height: 50},
                     {x: 250, y: 300, width: 50, height: 100},
                     {x: 500, y: 300, width: 50, height: 100},
@@ -208,8 +216,8 @@
                     {x: 300, y: 150, width: 50, height: 20}
                 ],
                 startPositions: [
-                    {x: 400, y: 100, angle: Math.PI/2},
-                    {x: 400, y: 120, angle: Math.PI/2}
+                    {x: 400, y: 100, angle: Math.PI/2, color: '#3498db'},
+                    {x: 400, y: 120, angle: Math.PI/2, color: '#e74c3c'}
                 ]
             }
         };
@@ -249,11 +257,14 @@
                     }
                 }
                 
+                // Поворот зависит от скорости
+                const turnSpeed = this.rotationSpeed * Math.min(1, Math.abs(this.speed)) * 2;
+                
                 if (keys[this.controls.left]) {
-                    this.angle -= this.rotationSpeed * Math.min(1, Math.abs(this.speed) * 2;
+                    this.angle -= turnSpeed;
                 }
                 if (keys[this.controls.right]) {
-                    this.angle += this.rotationSpeed * Math.min(1, Math.abs(this.speed) * 2);
+                    this.angle += turnSpeed;
                 }
                 
                 // Ограничение скорости
@@ -263,7 +274,7 @@
                 this.x += Math.cos(this.angle) * this.speed;
                 this.y += Math.sin(this.angle) * this.speed;
                 
-                // Проверка столкновений с границами
+                // Проверка столкновений
                 this.checkCollision();
                 
                 // Проверка чекпоинтов
@@ -305,16 +316,19 @@
                 const halfWidth = this.width / 2;
                 const halfHeight = this.height / 2;
                 
+                // Проверка пересечения с чекпоинтом
                 if (this.x + halfWidth > cp.x && this.x - halfWidth < cp.x + cp.width &&
                     this.y + halfHeight > cp.y && this.y - halfHeight < cp.y + cp.height) {
                     
                     this.currentCheckpoint = (this.currentCheckpoint + 1) % checkpoints.length;
-                    this.checkpointCooldown = 30;
+                    this.checkpointCooldown = 30; // Задержка перед повторным срабатыванием
                     
+                    // Проверка завершения круга
                     if (this.currentCheckpoint === 0) {
                         this.lap++;
                         laps[players.indexOf(this)] = this.lap;
                         
+                        // Проверка победы
                         if (this.lap >= maxLaps) {
                             finishRace();
                         }
@@ -359,7 +373,7 @@
                 ctx.fillStyle = this.color;
                 ctx.fillRect(-this.width/2, -this.height/2, this.width, this.height);
                 
-                // Ветровое стекло (для обозначения передней части)
+                // Ветровое стекло
                 ctx.fillStyle = 'rgba(200, 200, 255, 0.5)';
                 ctx.fillRect(this.width/4, -this.height/2, this.width/2, this.height);
                 
@@ -387,8 +401,9 @@
         // Обработчики кнопок меню
         trackButtons.forEach(button => {
             button.addEventListener('click', () => {
-                currentTrack = tracks[button.dataset.track];
-                checkpoints = currentTrack.checkpoints;
+                const trackId = button.dataset.track;
+                currentTrack = tracks[trackId];
+                checkpoints = [...currentTrack.checkpoints];
                 
                 // Создаем игроков
                 players = [
@@ -396,14 +411,14 @@
                         currentTrack.startPositions[0].x,
                         currentTrack.startPositions[0].y,
                         currentTrack.startPositions[0].angle,
-                        '#3498db',
+                        currentTrack.startPositions[0].color,
                         {up: 'w', down: 's', left: 'a', right: 'd'}
                     ),
                     new Player(
                         currentTrack.startPositions[1].x,
                         currentTrack.startPositions[1].y,
                         currentTrack.startPositions[1].angle,
-                        '#e74c3c',
+                        currentTrack.startPositions[1].color,
                         {up: 'ArrowUp', down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight'}
                     )
                 ];
@@ -420,12 +435,14 @@
         window.addEventListener('keydown', (e) => {
             keys[e.key] = true;
             
+            // Возврат в меню после финиша
             if (gameState === 'finished') {
                 gameState = 'menu';
                 menu.style.display = 'flex';
                 finishScreen.style.display = 'none';
             }
         });
+        
         window.addEventListener('keyup', (e) => {
             keys[e.key] = false;
         });
@@ -446,7 +463,7 @@
                 }
             }
             
-            // Рисуем "дыры" (внутренние части дороги)
+            // Рисуем внутренние части (не дорогу)
             ctx.fillStyle = currentTrack.background;
             for (const border of currentTrack.borders) {
                 if (border.isHole) {
@@ -469,9 +486,7 @@
             }
             
             // Рисуем игроков
-            for (const player of players) {
-                player.draw();
-            }
+            players.forEach(player => player.draw());
             
             // Рисуем информацию о кругах
             ctx.fillStyle = 'white';
@@ -489,9 +504,7 @@
         function gameLoop() {
             if (gameState === 'racing') {
                 // Обновление игроков
-                for (const player of players) {
-                    player.update(keys);
-                }
+                players.forEach(player => player.update(keys));
             }
             
             draw();
